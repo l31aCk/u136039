@@ -1,5 +1,6 @@
 body
 {
+<<<<<<< HEAD
 margin: 0px;
 padding: 0px;
 text-align: center;
@@ -9,34 +10,71 @@ text-align: center;
 {
 background: #cfcfcf;
 border-bottom: 5px solid #ccc;
+=======
+    margin: 0px;
+    padding: 0px;
+    text-align: center;
+}
+
+body {}
+
+img {}
+
+img {}
+
+#header
+{
+    background: #cfcfcf;
+    border-bottom: 5px solid #ccc;
+>>>>>>> conference_module_menu
 }
 
 
 
 #menu
 {
+<<<<<<< HEAD
 margin-left: 0px;
 border: 1px solid #efefef;
 height: 50px;
 width: 100%;
 background: #f8f8f8;
 border-bottom: 5px solid #eee;
+=======
+    margin-left: 0px;
+    border: 1px solid #efefef;
+    height: 50px;
+    width: 100%;
+    background: #f8f8f8;
+    border-bottom: 5px solid #eee;
+>>>>>>> conference_module_menu
 }
 
 #menu ul
 {
+<<<<<<< HEAD
 list-style:none;
+=======
+    list-style:none;
+>>>>>>> conference_module_menu
 }
 
 #menu li
 {
+<<<<<<< HEAD
 list-style:none;
 display:inline;
 margin:0 5px;
+=======
+    list-style:none;
+    display:inline;
+    margin:0 5px;
+>>>>>>> conference_module_menu
 }
 
 #menu li a
 {
+<<<<<<< HEAD
 color:#993399;
 text-transform:uppercase;
 font-size:13px;
@@ -45,23 +83,48 @@ text-decoration:none;
 border-bottom:5px solid #b5b4b4;
 cursor:pointer;
 padding:0 0 1px 0;
+=======
+    color:#993399;
+    text-transform:uppercase;
+    font-size:13px;
+    font-weight:bold;
+    text-decoration:none;
+    border-bottom:5px solid #b5b4b4;
+    cursor:pointer;
+    padding:0 0 1px 0;
+>>>>>>> conference_module_menu
 }
 
 #menu li a:hover
 {
+<<<<<<< HEAD
 border-bottom:5px solid #777;
 color:#0000ff;
 text-decoration:none;
+=======
+    border-bottom:5px solid #777;
+    color:#0000ff;
+    text-decoration:none;
+>>>>>>> conference_module_menu
 }
 
 #menu li a.current
 {
+<<<<<<< HEAD
 border-bottom: 0px;
 color:#0000ff;
 text-transform:uppercase;
 font-size:13px;
 font-weight:bold;
 text-decoration:none;
+=======
+    border-bottom: 0px;
+    color:#0000ff;
+    text-transform:uppercase;
+    font-size:13px;
+    font-weight:bold;
+    text-decoration:none;
+>>>>>>> conference_module_menu
 }
 
 #main
