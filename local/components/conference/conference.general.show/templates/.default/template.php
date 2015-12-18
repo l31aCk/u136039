@@ -48,7 +48,7 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die;
 <table style="border-width:0px;border-spacing:10px;">
 <?foreach($arResult["ITEMS"] as $arItem):?>
 <tr>
-<td>Тема: <?=$arItem["UF_TOPIC"]?></td>
+<td>Тема: <a href="request.php?conf=<?=$arItem["ID"]?>"><?=$arItem["UF_TOPIC"]?></td>
 <td>Место: <?=$arItem["UF_PLACE"]?></td>
 <td>Дата: <?=$arItem["UF_DATE"]?></td>
 </tr>

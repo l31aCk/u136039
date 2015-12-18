@@ -16,7 +16,7 @@ $arComponentDescription = array
                     "SORT" => 10,"CHILD" =>
                             array
                             (
-                                "ID" => "UsersAddConference",
+                                "ID" => "UserMessagesConference",
                             )
                     ),
             ),

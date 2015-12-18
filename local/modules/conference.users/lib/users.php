@@ -7,6 +7,40 @@ use Bitrix\Main\Localization\Loc;
 use Bitrix\Iblock\ElementTable;
 use Bitrix\Main\UserTable;
 Loc::loadMessages(__FILE__);
+class ConferenceTable extends Entity\DataManager {
+    public static function getFilePath()
+    {
+        return __FILE__;
+    }
+    /*Название таблицы HL в БД*/
+    public static function getTableName()
+    {
+        return 'conference_general';
+    }
+    /*Описание полей сущности (соответсвуют полям HL EmployeeKPI)*/
+    public static function getMap()
+    {
+        return array(
+            'ID' => array(
+                'data_type' => 'integer',
+                'primary' => true,
+                'autocomplete' => true
+            ),
+            'UF_TOPIC' => array(
+                'data_type' => 'string'
+            ),
+            'UF_DATE' => array(
+                'data_type' => 'datetime'
+            ),
+            'UF_PLACE' => array(
+                'data_type' => 'integer'
+            )
+ );
+ }
+}
+
+
+
 class ConferenceUsersTable extends Entity\DataManager{
     public static function getFilePath()
     {
@@ -30,7 +64,7 @@ class ConferenceUsersTable extends Entity\DataManager{
                 'required' => true
             ),
             'UF_CONFID' => array(
-                'data_type' => 'ineger',
+                'data_type' => 'integer',
                 'required' => true
              ),
             'UF_RANG' => array(
@@ -45,6 +79,9 @@ class ConferenceUsersTable extends Entity\DataManager{
             'UF_THESIS' => array(
                 'data_type' => 'string'
              ),
+			'UF_THESIS_FILE' => array(
+                'data_type' => 'string'
+             ),
  //Описываем все связи с другими таблицами (внешние ключи)
  new Entity\ReferenceField(
      'UF_CONFID',
@@ -62,7 +99,7 @@ class ConferenceUsersTable extends Entity\DataManager{
 
 
 
-class ConferenceAdminTable extends Entity\DataManager{
+class ConferenceMessagesTable extends Entity\DataManager{
     public static function getFilePath()
     {
         return __FILE__;
@@ -70,7 +107,7 @@ class ConferenceAdminTable extends Entity\DataManager{
     /*Название таблицы HL в БД*/
     public static function getTableName()
     {
-        return 'conference_admin';
+        return 'conference_messages';
     }
     public static function getMap()
     {
@@ -85,8 +122,11 @@ class ConferenceAdminTable extends Entity\DataManager{
                 'required' => true
             ),
             'UF_CONFID' => array(
-                'data_type' => 'ineger',
+                'data_type' => 'integer',
                 'required' => true
+             ),
+			'UF_STATUS' => array(
+                'data_type' => 'integer'
              ),
  //Описываем все связи с другими таблицами (внешние ключи)
  new Entity\ReferenceField(
@@ -108,17 +148,17 @@ class ConferenceAdminTable extends Entity\DataManager{
 
 
 
-class USERSConference {
+
+class USERSConference{
 
 
 
-    //Компонент conference.menu.create
-    public static function UsersAddConference($usid, $confid, $rang, $work, $thesis) {
+    public static function UsersAddConference($usid, $confid, $rang, $work, $thesis, $thesis_name) {
         if(!$rang || !$work || !$thesis ) {
             return array();
         }
 
-
+       $status = 0;
         //Добавляем значения
         $arValue = array(
            'UF_USID' => $usid,
@@ -127,7 +167,8 @@ class USERSConference {
            'UF_RANG' => $rang,
            'UF_WORK' => $work,
 		   'UF_STATUS' => $status,
-		   'UF_THESIS' => $thesis
+		   'UF_THESIS' => $thesis,
+		   'UF_THESIS_FILE' => $thesis_name
         );
 
         //Делаем запрос в БД и возвращаем ответ
@@ -135,15 +176,24 @@ class USERSConference {
 
     }
 	
+    public static function AdminAddConference($usid, $confid) {
+
+        //Добавляем значения
+        $arValue = array(
+           'UF_USID' => $usid,
+           'UF_CONFID' => $confid);
+
+        //Делаем запрос в БД и возвращаем ответ
+        return ConferenceMessagesTable::add($arValue);
+
+    }	
 
 	
 		//Компонент conference.menu.general
-	public static function ShowConferences($limit)
+	public static function ShowConference($conference)
     {   
-
-		if($limit == 0) $filter = array('>=UF_DATE' =>  \Bitrix\Main\Type\DateTime::createFromUserTime(date("d.m.Y") . ' 00:00:00'));
-		else $filter = array('<UF_DATE' =>  \Bitrix\Main\Type\DateTime::createFromUserTime(date("d.m.Y") . ' 00:00:00'));
-		
+        $conference = intval($conference);
+		$filter = array('ID' => $conference, '>UF_DATE' => \Bitrix\Main\Type\DateTime::createFromUserTime(date("d.m.Y") . ' 00:00:00'));
 		
         $req = ConferenceTable::getList(array(
             'select' => array(
@@ -152,124 +202,159 @@ class USERSConference {
             'filter' => $filter
         ));
 		
-		$i=0;
-		while($res = $req->Fetch())
+		if($res = $req->Fetch())
 		{
 		$res[] = $req;
 
-		$ob[$i]["ID"] = $res["ID"];
-		$ob[$i]["UF_TOPIC"] = $res["UF_TOPIC"];
-		$ob[$i]["UF_PLACE"] = $res["UF_PLACE"];
-		$ob[$i]["UF_DATE"] = $res["UF_DATE"];
-
-		$i++;
-		}
-		return $ob;
-    }
-	
-	
-	
-	//Компонент conference.menu.general
-	public static function MenuValues($is_user)
-    {   
-        if($is_user == false)
-		{
-		//Показывать пункты только для гостей
-		$filter = array(
-		        'LOGIC' => 'OR',
-				array('UF_ACCESS' => 3),
-                array('UF_ACCESS' => 1));
-        }
-		else
-		{
-		//Показывать пункты только для пользователей
-		$filter = array(
-		        'LOGIC' => 'OR',
-				array('UF_ACCESS' => 2),
-                array('UF_ACCESS' => 1)
-				);
-		}
-		
-		if(!isset($is_user)) $filter = array(); //Для компонента conference.menu.edit
-		
-        $req = ConferenceMenuTable::getList(array(
-            'select' => array(
-                'ID', 'UF_VALUE', 'UF_ACCESS', 'UF_URL'
-            ),
-            'filter' => $filter
-        ));
-		
-		$i=0;
-		while($res = $req->Fetch())
-		{
-		$res[] = $req;
-
-		$ob[$i]["ID"] = $res["ID"];
-		$ob[$i]["UF_VALUE"] = $res["UF_VALUE"];
-		$ob[$i]["UF_ACCESS"] = $res["UF_ACCESS"];
-		$ob[$i]["UF_URL"] = $res["UF_URL"];
-
-		$i++;
-		}
-		return $ob;
-    }
-	
-    //Компонент conference.menu.edit | Обновление данных
-	public static function UpdateMenu($menu_id, $value, $url)
-    {
-		
-        $req = ConferenceMenuTable::getList(array(
-            'select' => array(
-                'ID', 'UF_VALUE', 'UF_ACCESS', 'UF_URL'
-            ),
-            'filter' => array(
-			    'ID' => $menu_id
-            )
-        ));
-		
-		if($row = $req->Fetch())
-		{
-		$row[] = $req;
-
-		
-		$res = array('0' => array(
-		   'ID' => $row["ID"],
-		   'UF_VALUE' => $value,
-		   'UF_ACCESS' => $row["UF_ACCESS"],
-		   'UF_URL' => $url));
-		
-
-		$ob = ConferenceMenuTable::update($menu_id, $res[0]);
+		$ob[0]["ID"] = $res["ID"];
+		$ob[0]["UF_TOPIC"] = $res["UF_TOPIC"];
+		$ob[0]["UF_PLACE"] = $res["UF_PLACE"];
+		$ob[0]["UF_DATE"] = $res["UF_DATE"];
 		return $ob;
 		}
 		else return false;
     }
 	
-    //Компонент conference.menu.edit | Удаление данных	
-	public static function DeleteMenu($menu_id)
-    {
+	public static function MessageToConference($user, $admin)
+	{
+	   if($admin == 'no') $req = ConferenceMessagesTable::getList(array('select' => array('ID', 'UF_USID', 'UF_CONFID', 'UF_STATUS'), 'filter' => array('UF_USID' => $user, 'UF_STATUS' => '1')));
+       else  $req = ConferenceMessagesTable::getList(array('select' => array('ID', 'UF_USID', 'UF_CONFID', 'UF_STATUS'), 'filter' => array('UF_STATUS' => '')));
+
+	   if($res = $req->fetch())
+	   {
+	   $res[] = $req;
+	   return $res;
+	   }
+	   else return false;	
+	}
+	
+	
+
+	public static function ShowMessages()
+    {   
 		
-        $req = ConferenceMenuTable::getList(array(
+        $req = ConferenceMessagesTable::getList(array('select' => array('ID', 'UF_USID', 'UF_CONFID'), 'filter' => array('UF_STATUS' => '')));
+
+		
+	    //$filter = array('UF_USID' => $user, 'UF_CONFID' => $conference);
+		
+		$i=0;
+		while($res = $req->Fetch())
+		{
+		$res[] = $req;
+
+		$ob[$i]["ID"] = $res["ID"];
+		
+		
+        $row = ConferenceTable::getList(array(
             'select' => array(
-                'ID', 'UF_VALUE', 'UF_ACCESS', 'UF_URL'
+                'ID', 'UF_TOPIC'
             ),
-            'filter' => array(
-			    'ID' => $menu_id
-            )
-        ));
+            'filter' => array('ID' => $res["UF_CONFID"])
+        ));		
+		
+		if($rez = $row->fetch())
+		{
+		$rez[] = $row;
+		
+		$ob[$i]["UF_TOPIC"] = $rez["UF_TOPIC"];
+		
+		$uss = UserTable::getList(array(
+            'select' => array(
+                'ID', 'NAME', 'LAST_NAME'
+            ),
+            'filter' => array('ID' => $res["UF_USID"])
+        ));		
+		
+		if($user = $uss->fetch())
+        {
+		$user[] = $uss;
+		
+		$ob[$i]["USID"] = $user["ID"];
+		$ob[$i]["NAME"] = $user["NAME"];
+		$ob[$i]["LAST_NAME"] = $user["LAST_NAME"];
+		
+		}
+		
+		}
+		$i++;
+		}
+	return $ob;
+    }
+	
+    //Компонент conference.menu.edit | Обновление данных
+	public static function UpdateConference($id)
+    {
+
+        $req = ConferenceMessagesTable::getList(array('select' => array('ID', 'UF_USID', 'UF_CONFID'), 'filter' => array('ID' => $id)));
+		
+		if($row = $req->fetch())
+		{
+		$row[] = $req;
+		
+		$res = array('0' => array('UF_STATUS' => '1'));
+		 
+		$ob = ConferenceMessagesTable::update($row["ID"], $res[0]);
+		
+		$ret = ConferenceUsersTable::getList(array('select' => array('ID', 'UF_STATUS'), 'filter' => array('UF_USID' => $row["UF_USID"], 'UF_CONFID' => $row["UF_CONFID"])));
+		
+		if($rem = $ret->fetch())
+		{
+		$rem[] = $ret;
+		
+
+		$rel = array('0' => array(
+		   'UF_STATUS' => '1'));
+		 
+		$ob2 = ConferenceUsersTable::update($rem["ID"], $rel[0]);
+		
+		}
+		}
+		
+    }
+	
+
+	public static function DeleteUserConference($id, $user_id)
+    {
+
+    $req = ConferenceMessagesTable::getList(array('select' => array('ID', 'UF_USID', 'UF_CONFID'), 'filter' => array('ID' => $id, 'UF_USID' => $user_id)));
 		
 		if($row = $req->Fetch())
 		{
 		$row[] = $req;
 
+
+		$ob = ConferenceMessagesTable::delete($row["ID"]);
+		$ret = ConferenceUsersTable::getList(array('select' => array('ID', 'UF_STATUS'), 'filter' => array('UF_USID' => $row["UF_USID"], 'UF_CONFID' => $row["UF_CONFID"])));
 		
+		/*
 		$res = array('0' => array(
 		   'ID' => $row["ID"],
 		   'UF_VALUE' => $row["UF_VALUE"],
 		   'UF_ACCESS' => $row["UF_ACCESS"],
 		   'UF_URL' => $row["UF_URl"]));
+		*/
 		
-		$ob = ConferenceMenuTable::delete($res[0]["ID"]);
+		if($res = $ret->fetch())
+		{
+
+
+		$ob2 = ConferenceUsersTable::delete($res["ID"]);
+		return $ob;
+		}
+		}
+		else return false;
+    }
+	
+	public static function CloseUserConference($user_id)
+    {
+
+    $req = ConferenceMessagesTable::getList(array('select' => array('ID', 'UF_USID', 'UF_CONFID'), 'filter' => array('UF_USID' => $user_id)));
+		
+		if($row = $req->Fetch())
+		{
+		$row[] = $req;
+		$ob = ConferenceMessagesTable::delete($row["ID"]);
 		return $ob;
 		}
 		else return false;
